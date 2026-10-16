@@ -1,58 +1,84 @@
-# Salesforce DX Project
+# SparkNest Salesforce Capstone Project
 
-Salesforce DX is a development approach that brings source-driven development, team collaboration, and continuous integration to the Salesforce Platform. Instead of working directly in an org through a web browser, you work with metadata as source files in a local DX project, track changes in version control, and deploy through automated processes.
+Complete enterprise implementation for **SparkNest**, a direct-to-consumer and B2B electronics and smart home retailer, built on Salesforce Developer Edition.
 
-This project template gets you started with the tools and structure you need to build Salesforce applications using source control, scratch orgs, and the Salesforce CLI.
+## 🚀 Overview
 
-## Prerequisites
+- **Target Org:** `SparkNestDevOrg` (`singhshweta3024.584f9afd844e@agentforce.com`)
+- **API Version:** 68.0 / 60.0
+- **Apex Code Coverage:** 96% org-wide (17/17 tests passing)
+- **Live Demo Script:** See [`DEMO_SCRIPT.md`](./DEMO_SCRIPT.md) for the 15-minute presentation guide.
 
-Before you start, make sure you have:
+---
 
-- **Salesforce CLI** - Download from [developer.salesforce.com/tools/salesforcecli](https://developer.salesforce.com/tools/salesforcecli). See [Install Salesforce CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm) for details.
-- **VS Code with Salesforce Extension Pack** - See [Installation Instructions](https://developer.salesforce.com/docs/platform/sfvscode-extensions/guide/install.html) for details. Includes the Agentforce Vibes extension.
-- **A development org** - Sign up for a free Developer Edition org [here](https://developer.salesforce.com/signup).
-- **Dev Hub enabled** (optional, required to create scratch orgs) - You can enable Dev Hub in your development org under Setup > Dev Hub.  See [Provide Developers Access to Salesforce DX Tools](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_setup_dx_tools.htm).
+## 🛠️ Architecture & Features
 
-## Project Structure
+### 1. Data Model & Junction Object (Task 1 & 4)
+- **`Enquiry__c`**: Core custom object (`ENQ-{0000}`) tracking pre-sales and care plan queries.
+- **`Enquiry_Product__c`**: Junction object linking `Enquiry__c` to standard `Product2` with fields `Product__c`, `Quantity_Interested__c`, and `Notes__c`.
+- **Custom Rollup Trigger**: `EnquiryProductTrigger` delegating to `EnquiryProductService` dynamically calculates and updates `Total_Products_Interested__c` across insert, update (reparenting), delete, and undelete operations.
+- **Seed Data**: 8 products across 4 categories (Personal Devices, Smart Home, Accessories, Annual Care Plans) with unique `SKU__c` external IDs; 10 contacts with duplicate rules on matching email.
 
-Your DX project follows this structure:
+### 2. Security & Sharing Model (Task 2)
+- **OWD**: `Enquiry__c` is **Private**, `Case` is **Public Read Only**, `Contact` is **Public Read Only**.
+- **Role Hierarchy**: Structured strictly under `CEO`:
+  - `Sales Manager` -> `Sales Rep — Hyderabad` & `Sales Rep — Mumbai`
+  - `Support Manager` -> `Support Agent — Hyderabad` & `Support Agent — Mumbai`
+- **Profiles & Permission Sets**:
+  - `SparkNest Sales Rep` (CRED on `Enquiry__c`, no Case access)
+  - `SparkNest Support Agent` (Read on `Enquiry__c`, Read/Edit on `Case`)
+  - `Senior_Sales_Rep` Permission Set assigned to **Arjun Sharma** adding Delete on `Enquiry__c`, Read on `Case`, and Custom Permission `View_Customer_Budget`.
+- **Criteria-Based Sharing Rule**: Shares `Care Plan Enquiry` records with Support Agent roles (Read Only).
 
-- **`force-app/main/default/`** - Your metadata source files live in this default package directory. You can configure additional package directories in the `sfdx-project.json` file.
-- **`config/`** - Scratch org definitions and project settings
-- **`scripts/`** - Automation scripts for common tasks
-- **`sfdx-project.json`** - Project manifest that defines package directories, namespace, API version, and other project-level settings
+### 3. Lightning Experience & Dynamic Forms (Task 3)
+- **Apps**: `SparkNest Sales` and `SparkNest Support` customized with relevant tabs.
+- **Dynamic Forms**:
+  - `Plan_Duration__c` visible only when `Enquiry_Type__c == 'Care Plan Enquiry'`.
+  - `Source__c` visible only when `Enquiry_Type__c == 'Product Enquiry'`.
+  - `Customer_Budget__c` conditionally visible only to users with custom permission `View_Customer_Budget`.
+  - `Enquiry Products` related list configured with quick actions.
+- **List Views & Search Layouts**: `My Open Enquiries`, `Care Plan Enquiries`, `This Week's Enquiries`.
 
-See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm).
+### 4. Process Automation & Flows (Task 5)
+- **Screen Flow (`Convert_Enquiry_to_Case`)**: Launched via Quick Action `Convert to Case` on `Enquiry__c`. Collects Priority & Description, routes case automatically to `Care_Plan_Support` or `General_Support` queue, auto-updates Enquiry `Status__c = 'Closed'`, and shows confirmation screen with generated `CaseNumber`.
+- **Record-Triggered Flow (`Auto_close_Follow_up_Tasks`)**: Fires after Enquiry status changes to `Closed`, automatically completing open tasks.
+- **Scheduled Flow (`Weekly_Enquiry_Summary`)**: Runs weekly, aggregating enquiries created over the past 7 days and assigning an overview task to Sales Manager **Vikram Kumar**.
 
-## Get Started
+### 5. Apex Framework & Batch Apex (Task 6)
+- **Trigger Framework**: Thin triggers (`EnquiryTrigger`, `EnquiryProductTrigger`) -> `TriggerDispatcher` -> `EnquiryTriggerHandler` -> `EnquiryService`.
+- **Business Logic Enforced**:
+  - Blank `Status__c` defaults to `'New'`.
+  - Customer budget validated >= ₹1,000.
+  - Auto-creation of 3-day follow-up tasks on insert.
+  - Auto-stamping of `Closed_Date__c = System.today()` on closure.
+- **Batch & Scheduler**: `CloseStaleEnquiriesBatch` closes inactive enquiries older than 30 days; scheduled nightly via `CloseStaleEnquiriesScheduler`.
 
-Ready to start developing? The [Get Started with Salesforce DX](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_get_started_dx.htm) guide walks you through your first project, from creating a scratch org to creating a simple Apex class or LWC to deploying your code to a sandbox.
+### 6. Integrations & APIs (Task 7)
+- **Custom REST API (`SparkNestEnquiryAPI`)**: Exposed at `/services/apexrest/SparkNestEnquiry/`:
+  - Scenario 1 (New Customer): Creates Contact + Enquiry -> 201 Created.
+  - Scenario 2 (Existing Customer): Matches existing Contact by email -> 201 Created.
+  - Scenario 3 (Missing Email): Validates input, returns structured HTTP 400 with `'Email is required'`.
+- **Composite API**: Atomic creation of Contact + Enquiry linked via `@{refContact.id}` with `allOrNone: true`, including rollback verification.
+- **Postman Collection**: Located in [`postman/SparkNest.postman_collection.json`](./postman/SparkNest.postman_collection.json).
 
-## Common Salesforce CLI Commands
+### 7. Reports & Dynamic Dashboards (Task 8)
+- **Folder**: `SparkNest Reports` (public folder).
+- **Reports**:
+  1. `Enquiries by Type` (Summary report with Donut chart).
+  2. `My Open Enquiries` (Tabular report filtered to active enquiries).
+  3. `Conversion Rate by Source` (Summary/Stacked Column report).
+  4. `Weekly Enquiry Volume` (Summary report with Line chart).
+- **Dynamic Dashboard**: `SparkNest Sales Overview` running as the logged-in user (`LoggedInUser`).
 
-Here are common CLI commands that you'll use the most:
+### 8. Agentforce AI Topic (Task 9)
+- **Topic**: `Enquiry_Status_Check` (`GenAiPlugin`).
+- **Invocable Apex Action**: `GetEnquiryStatusAction` enabling real-time enquiry lookup by auto-number or customer email.
 
-- `sf org login web`: Authorize an org
-- `sf org open`: Open your org in a browser
-- `sf org create scratch`: Create a scratch org
-- `sf project deploy start`: Deploy metadata to your org
-- `sf project retrieve start`: Retrieve metadata from your org
-- `sf template generate <artifact>`: Scaffold new components, such as Apex classes and triggers, LWC components, Lightning apps, and more
-- `sf apex <command>`: Run Apex tests, run anonymous Apex blocks, and view logs
-- `sf data <command>`: Work with test data
-- `sf alias <command>`: Manage org aliases
-- `sf config <command>`: Configure CLI settings
+---
 
-## Use Agentforce Vibes to Build Lightning Apps
+## 🧪 Testing
 
-Transform your ideas into custom Lightning apps that extend CRM workflows directly in Lightning Experience. Through natural conversations with Agentforce Vibes, implement custom objects and fields, complex business logic, and dynamic UI components. See [Build a Lightning App Using Agentforce Vibes](https://developer.salesforce.com/docs/platform/einstein-for-devs/guide/lexapp-overview.html).
-
-## Additional Resources
-
-- [Agentforce Vibes Developer Guide](https://developer.salesforce.com/docs/platform/einstein-for-devs/guide/einstein-overview.html)
-- [Salesforce CLI Installation Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm)
-- [Salesforce DX Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/)
-- [Salesforce CLI Command Reference](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/)
-- [Salesforce CLI Plugin Development Guide](https://developer.salesforce.com/docs/platform/salesforce-cli-plugin/guide/conceptual-overview.html)
-- [Salesforce VS Code Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
-
+Run all unit tests with code coverage:
+```bash
+sf apex run test --code-coverage --result-format human --target-org SparkNestDevOrg
+```

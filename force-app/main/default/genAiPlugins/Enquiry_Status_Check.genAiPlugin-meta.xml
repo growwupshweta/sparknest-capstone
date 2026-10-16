@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPlugin xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Handles customer inquiries regarding the status and progress of their existing enquiries</description>
+    <developerName>Enquiry_Status_Check</developerName>
+    <language>en_US</language>
+    <masterLabel>Enquiry Status Check</masterLabel>
+    <pluginType>Topic</pluginType>
+    <scope>Your job is to provide status updates on existing customer enquiries. When a customer asks about their enquiry status, ask them for their Enquiry Name or Email address. Then look up their enquiry and inform them of the status, subject, and latest activity.</scope>
+</GenAiPlugin>
