@@ -1,0 +1,175 @@
+{
+  "info": {
+    "_postman_id": "sparknest-capstone-apis-2026",
+    "name": "SparkNest",
+    "description": "Postman collection for SparkNest Salesforce Capstone Project covering Custom REST API endpoints and Composite API atomic transactions.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Custom REST - Scenario 1 (New Customer)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{_accessToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"Rohan\",\n  \"lastName\": \"Verma\",\n  \"email\": \"rohan.verma@sparknest.test\",\n  \"phone\": \"+91 98888 77777\",\n  \"city\": \"Hyderabad\",\n  \"subject\": \"Smart Home Consultation\",\n  \"enquiryType\": \"Product Enquiry\",\n  \"budget\": 25000,\n  \"description\": \"Looking for comprehensive home automation installation.\"\n}"
+        },
+        "url": {
+          "raw": "{{_endpoint}}/services/apexrest/SparkNestEnquiry/",
+          "host": [
+            "{{_endpoint}}"
+          ],
+          "path": [
+            "services",
+            "apexrest",
+            "SparkNestEnquiry",
+            ""
+          ]
+        },
+        "description": "Creates both Contact and Enquiry when the customer email does not already exist in Salesforce. Returns HTTP 201 with contactId, enquiryId, and isNewCustomer: true."
+      }
+    },
+    {
+      "name": "Custom REST - Scenario 2 (Existing Customer)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{_accessToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"Rajesh\",\n  \"lastName\": \"Kumar\",\n  \"email\": \"rajesh.kumar@sparknest.test\",\n  \"subject\": \"Care Plan Renewal\",\n  \"enquiryType\": \"Care Plan Enquiry\",\n  \"budget\": 15000,\n  \"description\": \"Renewing annual care plan for second year.\"\n}"
+        },
+        "url": {
+          "raw": "{{_endpoint}}/services/apexrest/SparkNestEnquiry/",
+          "host": [
+            "{{_endpoint}}"
+          ],
+          "path": [
+            "services",
+            "apexrest",
+            "SparkNestEnquiry",
+            ""
+          ]
+        },
+        "description": "Matches existing Contact by email and links a newly created Enquiry to them. Returns HTTP 201 with contactId, enquiryId, and isNewCustomer: false."
+      }
+    },
+    {
+      "name": "Custom REST - Scenario 3 (Missing Email Validation)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{_accessToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"Anonymous\",\n  \"lastName\": \"User\",\n  \"subject\": \"Inquiry without email\",\n  \"budget\": 5000\n}"
+        },
+        "url": {
+          "raw": "{{_endpoint}}/services/apexrest/SparkNestEnquiry/",
+          "host": [
+            "{{_endpoint}}"
+          ],
+          "path": [
+            "services",
+            "apexrest",
+            "SparkNestEnquiry",
+            ""
+          ]
+        },
+        "description": "Validates request payload; returns structured HTTP 400 with 'Email is required' when email parameter is absent or blank."
+      }
+    },
+    {
+      "name": "Composite API - Atomic Creation (Contact & Enquiry)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{_accessToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"allOrNone\": true,\n  \"compositeRequest\": [\n    {\n      \"method\": \"POST\",\n      \"url\": \"/services/data/v68.0/sobjects/Contact\",\n      \"referenceId\": \"refContact\",\n      \"body\": {\n        \"FirstName\": \"Ananya\",\n        \"LastName\": \"Desai\",\n        \"Email\": \"ananya.desai@sparknest.test\",\n        \"Phone\": \"+91 97777 66666\",\n        \"MailingCity\": \"Mumbai\"\n      }\n    },\n    {\n      \"method\": \"POST\",\n      \"url\": \"/services/data/v68.0/sobjects/Enquiry__c\",\n      \"referenceId\": \"refEnquiry\",\n      \"body\": {\n        \"Subject__c\": \"Personal Devices Product Bundle\",\n        \"Contact__c\": \"@{refContact.id}\",\n        \"Enquiry_Type__c\": \"Product Enquiry\",\n        \"Customer_Budget__c\": 45000,\n        \"Source__c\": \"Website\",\n        \"Status__c\": \"New\"\n      }\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{_endpoint}}/services/data/v68.0/composite",
+          "host": [
+            "{{_endpoint}}"
+          ],
+          "path": [
+            "services",
+            "data",
+            "v68.0",
+            "composite"
+          ]
+        },
+        "description": "Atomic creation of a Contact and an Enquiry linked via @{refContact.id} using Salesforce Composite API with allOrNone: true."
+      }
+    },
+    {
+      "name": "Composite API - Atomic Rollback Test",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{_accessToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"allOrNone\": true,\n  \"compositeRequest\": [\n    {\n      \"method\": \"POST\",\n      \"url\": \"/services/data/v68.0/sobjects/Contact\",\n      \"referenceId\": \"refContact\",\n      \"body\": {\n        \"FirstName\": \"Rollback\",\n        \"LastName\": \"Tester\",\n        \"Email\": \"rollback.tester@sparknest.test\",\n        \"MailingCity\": \"Chennai\"\n      }\n    },\n    {\n      \"method\": \"POST\",\n      \"url\": \"/services/data/v68.0/sobjects/Enquiry__c\",\n      \"referenceId\": \"refEnquiry\",\n      \"body\": {\n        \"Subject__c\": \"Invalid Budget Rollback Test\",\n        \"Contact__c\": \"@{refContact.id}\",\n        \"Enquiry_Type__c\": \"Product Enquiry\",\n        \"Customer_Budget__c\": 500,\n        \"Source__c\": \"Website\"\n      }\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{_endpoint}}/services/data/v68.0/composite",
+          "host": [
+            "{{_endpoint}}"
+          ],
+          "path": [
+            "services",
+            "data",
+            "v68.0",
+            "composite"
+          ]
+        },
+        "description": "Intentionally submits invalid Customer_Budget__c (< 1000) on Enquiry step with allOrNone: true to demonstrate that the Contact creation is rolled back atomically."
+      }
+    }
+  ]
+}
