@@ -1,0 +1,9 @@
+Name,ProductCode,SKU__c,Product_Category__c,IsActive,Description
+SparkPhone X,SP-PH-X,SKU-PD-001,Personal Devices,true,Flagship 5G smartphone with dynamic AMOLED display
+SparkTab Pro,SP-TB-PRO,SKU-PD-002,Personal Devices,true,High performance tablet with active stylus support
+SparkEcho Hub,SP-SH-HUB,SKU-SH-001,Smart Home,true,Central smart home automation touch display and voice assistant
+SparkGlow Smart Light,SP-SH-GLOW,SKU-SH-002,Smart Home,true,Multi-color WiFi ambient LED smart lighting
+SparkNest Wireless Charger,SP-AC-WCHG,SKU-AC-001,Accessories,true,Fast 15W magnetic wireless charging stand
+SparkNest Fast Cable,SP-AC-FCBL,SKU-AC-002,Accessories,true,Durable braided 100W USB-C ultra-fast charging cable
+SparkCare Gold,SP-CP-GOLD,SKU-CP-001,Annual Care Plans,true,1-year comprehensive warranty and priority support
+SparkCare Platinum,SP-CP-PLAT,SKU-CP-002,Annual Care Plans,true,2-year all-inclusive accidental damage protection and 24/7 VIP assistance

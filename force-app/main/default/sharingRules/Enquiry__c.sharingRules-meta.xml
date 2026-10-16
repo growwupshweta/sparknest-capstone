@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SharingRules xmlns="http://soap.sforce.com/2006/04/metadata">
+    <sharingCriteriaRules>
+        <fullName>Share_Care_Plan_Enquiries_With_Support</fullName>
+        <accessLevel>Read</accessLevel>
+        <description>Share Care Plan Enquiries with Support Agent Hyderabad</description>
+        <label>Share Care Plan Enquiries With Support</label>
+        <sharedTo>
+            <role>Support_Agent_Hyderabad</role>
+        </sharedTo>
+        <criteriaItems>
+            <field>Enquiry_Type__c</field>
+            <operation>equals</operation>
+            <value>Care Plan Enquiry</value>
+        </criteriaItems>
+    </sharingCriteriaRules>
+    <sharingCriteriaRules>
+        <fullName>Share_Care_Plan_Enquiries_With_Support_Mumbai</fullName>
+        <accessLevel>Read</accessLevel>
+        <description>Share Care Plan Enquiries with Support Agent Mumbai</description>
+        <label>Share Care Plan Enquiries With Support Mumbai</label>
+        <sharedTo>
+            <role>Support_Agent_Mumbai</role>
+        </sharedTo>
+        <criteriaItems>
+            <field>Enquiry_Type__c</field>
+            <operation>equals</operation>
+            <value>Care Plan Enquiry</value>
+        </criteriaItems>
+    </sharingCriteriaRules>
+</SharingRules>
