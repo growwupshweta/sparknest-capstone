@@ -2,7 +2,7 @@
 
 Complete enterprise implementation for **SparkNest**, a direct-to-consumer and B2B electronics and smart home retailer, built on Salesforce Developer Edition.
 
-## 🚀 Overview
+## Overview
 
 - **Target Org:** `SparkNestDevOrg` (`singhshweta3024.584f9afd844e@agentforce.com`)
 - **API Version:** 68.0 / 60.0
@@ -11,7 +11,7 @@ Complete enterprise implementation for **SparkNest**, a direct-to-consumer and B
 
 ---
 
-## 🛠️ Architecture & Features
+## Architecture & Features
 
 ### 1. Data Model & Junction Object (Task 1 & 4)
 - **`Enquiry__c`**: Core custom object (`ENQ-{0000}`) tracking pre-sales and care plan queries.
@@ -76,7 +76,7 @@ Complete enterprise implementation for **SparkNest**, a direct-to-consumer and B
 
 ---
 
-## 🧪 Testing
+## Testing
 
 Run all unit tests with code coverage:
 ```bash
